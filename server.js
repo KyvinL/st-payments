@@ -34,8 +34,9 @@ app.get('/health', (_req, res) => {
 app.get('/', (_req, res) => res.send('Seattle Trading API is up'));
 
 
-// Map your products with prices (in cents)
+// Add products with prices (in cents)
 const PRODUCTS = {
+  "qube-nitrile-exam-10bx": 5499,
   "st-nitrile-blue-100": 1299,
   "st-nitrile-black-100": 1449,
   "st-latex-100": 1099,
@@ -145,7 +146,7 @@ app.post('/tax-preview', async (req, res) => {
 // ----- CREATE PAYMENT INTENT  -------
 app.post('/create-payment-intent', async (req, res) => {
   try {
-    const { items, shipping, calc_id } = req.body;
+    const { items, shipping, calc_id, email, name, cart } = req.body || {};
     console.log('create-payment-intent payload:', JSON.stringify(req.body));
 
     let amount;
@@ -169,11 +170,23 @@ app.post('/create-payment-intent', async (req, res) => {
       metadata.items = items.map(i => `${i.id}x${i.qty}`).join(', ');
     }
 
+    // NEW: stash customer + compact cart in metadata
+    if (email) metadata.email = String(email);
+    if (name)  metadata.name  = String(name);
+    if (Array.isArray(cart)) {
+      metadata.cart = JSON.stringify(cart.map(i => ({
+        id: String(i.id || ''),
+        qty: Math.max(1, Number(i.qty || 1) | 0),
+        p:   Math.max(0, Number(i.p || i.price_cents || 0) | 0)
+      })));
+    }
+
     const params = {
       amount,
       currency: 'usd',
       description,
       metadata,
+      automatic_payment_methods: { enabled: true }
     };
     if (isAddressComplete(shipping)) params.shipping = shipping;
 
@@ -182,6 +195,37 @@ app.post('/create-payment-intent', async (req, res) => {
   } catch (err) {
     console.error('Payment error:', err && err.raw ? err.raw : err);
     return res.status(500).json({ error: err.message || 'Server error' });
+  }
+});
+
+app.get('/pi/:id', async (req, res) => {
+  try {
+    const pi = await stripe.paymentIntents.retrieve(
+      req.params.id,
+      { expand: ['charges'] }
+    );
+    const ch = pi.charges?.data?.[0];
+
+    // Parse compact cart safely
+    let cart = [];
+    try { cart = JSON.parse(pi.metadata?.cart || '[]'); } catch (_) {}
+
+    res.json({
+      ok: true,
+      order: {
+        id:       pi.id,
+        status:   pi.status,
+        amount:   pi.amount,             // cents
+        currency: pi.currency,
+        email:    pi.metadata?.email || ch?.billing_details?.email || '',
+        name:     pi.metadata?.name  || ch?.billing_details?.name  || '',
+        cart,
+        receipt_url: ch?.receipt_url || ''
+      }
+    });
+  } catch (err) {
+    console.error('GET /pi error:', err && err.raw ? err.raw : err);
+    res.status(400).json({ ok: false, error: 'Cannot retrieve payment' });
   }
 });
 
