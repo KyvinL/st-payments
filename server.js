@@ -24,6 +24,10 @@ app.use(cors({
 console.log('CORS allowed from:', origins);
 app.use(express.json());
 
+app.get('/health', (_req, res) => {
+  res.json({ ok: true, ts: Date.now() });
+});
+
 // Map your products with prices (in cents)
 const PRODUCTS = {
   "st-nitrile-blue-100": 1299,
