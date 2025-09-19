@@ -1,5 +1,8 @@
 
-// server.js — Seattle Trading payment server
+// =============================================================
+// Seattle Trading — server.js - Why The Fuck Are You Looking At My Code?
+// =============================================================
+
 require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
@@ -39,7 +42,7 @@ const PRODUCTS = {
   "st-vinyl-100":  849
 };
 
-// --- helpers --------------------------------------------------
+// Helpers
 function normalizeItems(items = []) {
   if (!Array.isArray(items)) return [];
   return items.filter(Boolean).map(it => ({
@@ -53,9 +56,9 @@ function buildLineItems(rawItems) {
     const unitAmount = PRODUCTS[id];
     if (!unitAmount) throw new Error(`Unknown product id: ${id}`);
     return {
-      amount: unitAmount,           // cents
-      reference: id,                // your SKU/id
-      tax_behavior: 'exclusive',    // tax added on top
+      amount: unitAmount,           
+      reference: id,                // SKU/id
+      tax_behavior: 'exclusive',    
       quantity: qty
     };
   });
@@ -71,7 +74,7 @@ function buildCustomerAddress(shipping = {}) {
       postal_code: String(a.postal_code || '').trim(),
       country: String(a.country || 'US').trim().toUpperCase(),
     },
-    // 🔴 REQUIRED by your Stripe API version when you send an address
+    // REQUIRED by Stripe API
     address_source: 'shipping',
   };
 }
@@ -124,14 +127,14 @@ app.post('/tax-preview', async (req, res) => {
       currency: 'usd',
       line_items,
       customer_details,
-      // shipping_cost: { amount: 0 }, // uncomment if you tax shipping
+      // shipping_cost: { amount: 0 }, // uncomment if tax shipping - Do if $100 or more -> No Shipping Fee
     });
 
     return res.json({
       id: calc.id,
-      subtotal: subtotalCents, // cents
-      tax: (calc.tax_amount_exclusive || 0) + (calc.tax_amount_inclusive || 0), // cents
-      total: subtotalCents + ((calc.tax_amount_exclusive || 0) + (calc.tax_amount_inclusive || 0)), // cents
+      subtotal: subtotalCents,
+      tax: (calc.tax_amount_exclusive || 0) + (calc.tax_amount_inclusive || 0),
+      total: subtotalCents + ((calc.tax_amount_exclusive || 0) + (calc.tax_amount_inclusive || 0)),
     });
   } catch (err) {
     console.error('tax-preview error:', err && err.raw ? err.raw : err);
@@ -139,13 +142,13 @@ app.post('/tax-preview', async (req, res) => {
   }
 });
 
-// ----- CREATE PAYMENT INTENT (uses calc_id if provided) -------
+// ----- CREATE PAYMENT INTENT  -------
 app.post('/create-payment-intent', async (req, res) => {
   try {
     const { items, shipping, calc_id } = req.body;
     console.log('create-payment-intent payload:', JSON.stringify(req.body));
 
-    let amount;                       // cents
+    let amount;
     let description = 'Seattle Trading Order';
     const metadata = {};
 
@@ -174,7 +177,6 @@ app.post('/create-payment-intent', async (req, res) => {
     };
     if (isAddressComplete(shipping)) params.shipping = shipping;
 
-    // IMPORTANT: do NOT include `automatic_tax` on your current API version
     const pi = await stripe.paymentIntents.create(params);
     return res.json({ clientSecret: pi.client_secret });
   } catch (err) {
