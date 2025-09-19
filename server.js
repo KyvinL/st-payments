@@ -28,6 +28,9 @@ app.get('/health', (_req, res) => {
   res.json({ ok: true, ts: Date.now() });
 });
 
+app.get('/', (_req, res) => res.send('Seattle Trading API is up'));
+
+
 // Map your products with prices (in cents)
 const PRODUCTS = {
   "st-nitrile-blue-100": 1299,
