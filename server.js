@@ -36,11 +36,40 @@ app.get('/', (_req, res) => res.send('Seattle Trading API is up'));
 
 // Add products with prices (in cents)
 const PRODUCTS = {
-  "qube-nitrile-exam-10bx": 5499,
-  "st-nitrile-blue-100": 1299,
-  "st-nitrile-black-100": 1449,
-  "st-latex-100": 1099,
-  "st-vinyl-100":  849
+  "us-1000-length-12\"-milky-white": 14999,
+  "us-2000-pro-3.5-ice-blue": 14499,
+  "us-1000-length-12\"-hot-pink": 14499,
+  "us-1000-pro-3.5-hot-pink": 12499,
+  "us-2,000-pro-3.0-cobalt-blue":  14499,
+  "us-1,000-pro-6.0-coal-black": 16499,
+  "us-1000-pro-5.0-coal-black": 15999,
+  "us-1000-pro-3.5-coal-black": 12499,
+  "us-1000-3.5-s": 14999,
+  "qube-latex-exam-powder": 5499,
+  "qube-nitrile-exam-powder-free": 5499,
+  "qube-latex-exam-powder-free": 5499,
+  "polysilk-18000-s": 5499,
+  "action-16000-s": 6499,
+  "action-69000-s": 6499,
+  "action-83000-s": 5799,
+  "action-808120-s": 6499,
+  "action-17700-s": 5799,
+  "shamrock-14000-s": 5499,
+  "shamrock-15000-s": 5499,
+  "shamrock-6000-s": 5499,
+  "shamrock-sup-60500-s": 5499,
+  "shamrock-30000-s": 5499,
+  "shamrock-80000-s": 5499,
+  "shamrock-sup-50359-s": 5499, 
+  "shamrock-10000-s": 5499,
+  "shamrock-68000-s": 5499,
+  "shamrock-86000-s": 12499,
+  "shamrock-20000-s": 5499, 
+  "excel-nitrile-exam": 6499, 
+  "walletz-nitrile-exam": 6499,
+  "icon-nitrile-exam": 5499,
+  "qube-nitrile-exam": 5499,
+  "qube-nitrile-exam-10bx": 5499
 };
 
 // Helpers
